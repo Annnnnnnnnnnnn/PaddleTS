@@ -25,14 +25,14 @@ class ReprForecasting(EnsembleForecasterBase, metaclass=abc.ABCMeta):
 
         in_chunk_len(int): The size of previous time point window  to use for representation results
         out_chunk_len(int): The size of the forecasting horizon, i.e., the number of time steps output by the model.
-        repr_model(ReprBasemodel): Representation model to use for forcast.
+        repr_model(ReprBasemodel): Representation model to use for forecasting.
         skip_chunk_len(int): Optional, the number of time steps between in_chunk and out_chunk for a single sample.
             The skip chunk is neither used as a feature (i.e. X) nor a label (i.e. Y) for a single sample. By
             default, it will NOT skip any time steps.
         sampling_stride: Sampling intervals between two adjacent samples.
         repr_model_params(dict):params for reprmodel init.
         encode_params(dict):params for reprmodel encode, "slide_len" will set to in_chunk_len by force.
-        downstream_leaner(Callable): The downstream leaner, should be a sklearn-like regressor, set to Ridge(alpha=0.5) by default.
+        downstream_learner(Callable): The downstream learner, should be a sklearn-like regressor, set to Ridge(alpha=0.5) by default.
         verbose(bool): Turn on Verbose mode,set to true by default.
 
     """
@@ -45,7 +45,7 @@ class ReprForecasting(EnsembleForecasterBase, metaclass=abc.ABCMeta):
                  sampling_stride: int = 1,
                  repr_model_params: dict = None,
                  encode_params: dict = None,
-                 downstream_leaner: Callable = None,
+                 downstream_learner: Callable = None,
                  verbose: bool = False
                  ) -> None:
 
@@ -65,8 +65,8 @@ class ReprForecasting(EnsembleForecasterBase, metaclass=abc.ABCMeta):
         self._encode_params = encode_params
 
         self._sampling_stride = sampling_stride
-        downstream_leaner = self._check_final_learner(downstream_leaner)
-        self._final_learner = MultiOutputRegressor(downstream_leaner)
+        downstream_learner = self._check_final_learner(downstream_learner)
+        self._final_learner = MultiOutputRegressor(downstream_learner)
 
     def _fit(self,
              tsdataset: TSDataset) -> None:
@@ -156,7 +156,7 @@ class ReprForecasting(EnsembleForecasterBase, metaclass=abc.ABCMeta):
             final_learner = clone(final_learner)
         return final_learner
 
-
+    @to_tsdataset(scenario="forecasting")
     def predict(self, tsdataset: TSDataset) -> TSDataset:
         """
         predict 
